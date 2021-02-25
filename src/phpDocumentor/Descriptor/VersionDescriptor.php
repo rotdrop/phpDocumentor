@@ -53,10 +53,6 @@ final class VersionDescriptor
             $documentationSets->add(new GuideSetDescriptor('', $guide['source'], $guide['output']));
         }
 
-        foreach ($config->getApi() ?? [] as $api) {
-            $documentationSets->add(new ApiSetDescriptor('', $api['source'], $api['output']));
-        }
-
         return new self($config->getNumber(), $documentationSets);
     }
 }
