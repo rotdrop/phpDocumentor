@@ -75,7 +75,7 @@ final class InitializeBuilderFromConfig
         return $payload;
     }
 
-    private function buildVersion(VersionSpecification $version) : VersionDescriptor
+    private function buildVersion(VersionSpecification $version): VersionDescriptor
     {
         $collection = Collection::fromClassString(DocumentationSetDescriptor::class);
         foreach ($version->getGuides() as $guide) {
@@ -89,7 +89,8 @@ final class InitializeBuilderFromConfig
                 new ApiSetDescriptor(
                     md5($apiSpecification['output']),
                     $apiSpecification['source'],
-                    $apiSpecification['output']
+                    $apiSpecification['output'],
+                    $apiSpecification
                 )
             );
         }

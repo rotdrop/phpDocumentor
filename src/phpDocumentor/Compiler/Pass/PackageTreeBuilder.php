@@ -55,7 +55,7 @@ final class PackageTreeBuilder implements CompilerPassInterface
         return 'Build "packages" index';
     }
 
-    public function execute(ProjectDescriptor $project) : void
+    public function execute(\phpDocumentor\Descriptor\ApiSetDescriptor $project) : void
     {
         $packages = Collection::fromClassString(PackageDescriptor::class);
         $packages['\\'] = $project->getPackage();

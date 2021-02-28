@@ -13,7 +13,11 @@ declare(strict_types=1);
 
 namespace phpDocumentor\Descriptor;
 
+use phpDocumentor\Configuration\ApiSpecification;
 use phpDocumentor\Configuration\Source;
+use phpDocumentor\Descriptor\Interfaces\PackageInterface;
+use phpDocumentor\Reflection\Fqsen;
+use phpDocumentor\Reflection\Php\File;
 
 final class ApiSetDescriptor extends DocumentationSetDescriptor
 {
@@ -23,13 +27,42 @@ final class ApiSetDescriptor extends DocumentationSetDescriptor
     /** @var Collection<NamespaceDescriptor> */
     private $namespaces;
 
-    public function __construct(string $name, Source $source, string $output, Collection $files, Collection $namespaces)
+    /** @var Collection<Collection<DescriptorAbstract>> */
+    private $indexes;
+
+    /** @var NamespaceDescriptor */
+    private $namespace;
+
+    /** @var PackageDescriptor */
+    private $package;
+
+    /** @var ApiSpecification */
+    private $apiSpecification;
+
+    public function __construct(string $name, Source $source, string $output, ApiSpecification $apiSpecification)
     {
         $this->name = $name;
         $this->source = $source;
         $this->output = $output;
-        $this->files = $files;
-        $this->namespaces = $namespaces;
+        $this->indexes = Collection::fromClassString(Collection::class);
+        $this->files = Collection::fromClassString(FileDescriptor::class);
+        $this->namespaces = Collection::fromClassString(NamespaceDescriptor::class);
+
+        $namespace = new NamespaceDescriptor();
+        $namespace->setName('\\');
+        $namespace->setFullyQualifiedStructuralElementName(new Fqsen('\\'));
+        $this->namespace = $namespace;
+
+        $package = new PackageDescriptor();
+        $package->setName('\\');
+        $package->setFullyQualifiedStructuralElementName(new Fqsen('\\'));
+        $this->package = $package;
+        $this->apiSpecification = $apiSpecification;
+    }
+
+    public function addFile(FileDescriptor $descriptor): void
+    {
+        $this->files->set($descriptor->getPath(), $descriptor);
     }
 
     public function getFiles(): Collection
@@ -37,8 +70,43 @@ final class ApiSetDescriptor extends DocumentationSetDescriptor
         return $this->files;
     }
 
+    public function addNamespace(NamespaceDescriptor $descriptor): void
+    {
+        $this->namespaces->set((string)$descriptor->getFullyQualifiedStructuralElementName(), $descriptor);
+    }
+
     public function getNamespaces(): Collection
     {
         return $this->namespaces;
+    }
+
+    /**
+     * Returns all indexes in this project.
+     *
+     * @see setIndexes() for more information on what indexes are.
+     *
+     * @return Collection<Collection<DescriptorAbstract>>
+     */
+    public function getIndexes() : Collection
+    {
+        return $this->indexes;
+    }
+
+    /**
+     * Returns the root (global) namespace.
+     */
+    public function getNamespace() : NamespaceDescriptor
+    {
+        return $this->namespace;
+    }
+
+    public function getPackage() : PackageInterface
+    {
+        return $this->package;
+    }
+
+    public function getSettings(): ApiSpecification
+    {
+        return $this->apiSpecification;
     }
 }
