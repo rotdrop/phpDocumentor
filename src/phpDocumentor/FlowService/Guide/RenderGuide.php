@@ -19,9 +19,10 @@ use phpDocumentor\Descriptor\GuideSetDescriptor;
 use phpDocumentor\Descriptor\ProjectDescriptor;
 use phpDocumentor\Descriptor\VersionDescriptor;
 use phpDocumentor\Dsn;
-use phpDocumentor\FlowService\FlowService;
+use phpDocumentor\FlowService\Transformer;
 use phpDocumentor\Guides\RenderCommand;
 use phpDocumentor\Guides\Renderer;
+use phpDocumentor\Transformer\Template;
 use phpDocumentor\Transformer\Transformation;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Stopwatch\Stopwatch;
@@ -30,7 +31,7 @@ use function sprintf;
 /**
  * @experimental Do not use; this stage is meant as a sandbox / playground to experiment with generating guides.
  */
-final class RenderGuide implements FlowService, ProjectDescriptor\WithCustomSettings
+final class RenderGuide implements Transformer, ProjectDescriptor\WithCustomSettings
 {
     public const FEATURE_FLAG = 'guides.enabled';
 
@@ -50,35 +51,27 @@ final class RenderGuide implements FlowService, ProjectDescriptor\WithCustomSett
         $this->renderer = $renderer;
     }
 
-    public function operate(DocumentationSetDescriptor $documentationSet): void
+    public function execute(ProjectDescriptor $project, DocumentationSetDescriptor $documentationSet, Template $template): void
     {
         $this->logger->warning(
             'Generating guides is experimental, no BC guarantees are given, use at your own risk'
         );
 
-        $this->renderDocumentationSet($documentationSet, $project, $transformation);
-    }
-
-    public function getDefaultSettings() : array
-    {
-        return [self::FEATURE_FLAG => false];
-    }
-
-    private function renderDocumentationSet(
-        DocumentationSetDescriptor $documentationSet,
-        ProjectDescriptor $project,
-        Transformation $transformation
-    ) : void {
         $dsn = $documentationSet->getSource()->dsn();
         $stopwatch = $this->startRenderingSetMessage($dsn);
 
-        $this->renderer->initialize($project, $documentationSet, $transformation);
+        $this->renderer->initialize($project, $documentationSet, $template);
 
         $this->commandBus->handle(
             new RenderCommand()
         );
 
         $this->completedRenderingSetMessage($stopwatch, $dsn);
+    }
+
+    public function getDefaultSettings() : array
+    {
+        return [self::FEATURE_FLAG => false];
     }
 
     private function startRenderingSetMessage(Dsn $dsn) : Stopwatch

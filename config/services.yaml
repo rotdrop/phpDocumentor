@@ -120,6 +120,10 @@ services:
       tags:
         - { name: 'phpdoc.flow.parser', documentation_type: 'phpDocumentor\Descriptor\ApiSetDescriptor' }
 
+    phpDocumentor\FlowService\Api\Transformer:
+      tags:
+        - { name: 'phpdoc.flow.transformer', documentation_type: 'phpDocumentor\Descriptor\ApiSetDescriptor' }
+
     ###################################################################################
     ## Autoloading definitions for individual classes #################################
     ###################################################################################
@@ -238,7 +242,6 @@ services:
             - { method: offsetSet, arguments: ['sourcecode', '@phpDocumentor\Transformer\Writer\Sourcecode']}
             - { method: offsetSet, arguments: ['Graph', '@phpDocumentor\Transformer\Writer\Graph']}
             - { method: offsetSet, arguments: ['twig', '@phpDocumentor\Transformer\Writer\Twig']}
-#            - { method: offsetSet, arguments: ['RenderGuide', '@phpDocumentor\Transformer\Writer\RenderGuide']}
 
     phpDocumentor\Transformer\Writer\Graph\PlantumlRenderer:
       arguments:
@@ -254,6 +257,10 @@ services:
         $outputFormats: !tagged_iterator phpdoc.guides.format
       tags:
         - { name: 'phpdoc.flow.parser', documentation_type: 'phpDocumentor\Descriptor\GuideSetDescriptor' }
+
+    phpDocumentor\FlowService\Guide\RenderGuide:
+      tags:
+        - { name: 'phpdoc.flow.transformer', documentation_type: 'phpDocumentor\Descriptor\GuideSetDescriptor' }
 
     phpDocumentor\Pipeline\Stage\Cache\LoadGuidesFromCache:
       tags:
