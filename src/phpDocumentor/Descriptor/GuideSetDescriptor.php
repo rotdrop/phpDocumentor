@@ -17,10 +17,14 @@ use phpDocumentor\Configuration\Source;
 
 final class GuideSetDescriptor extends DocumentationSetDescriptor
 {
-    public function __construct(string $name, Source $source, string $output)
+    /** @var string */
+    private $inputFormat;
+
+    public function __construct(string $name, Source $source, string $output, string $inputFormat)
     {
         $this->name = $name;
         $this->source = $source;
         $this->output = $output;
+        $this->inputFormat = $inputFormat;
     }
 }
