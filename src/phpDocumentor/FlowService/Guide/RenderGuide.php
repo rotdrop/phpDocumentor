@@ -15,15 +15,13 @@ namespace phpDocumentor\FlowService\Guide;
 
 use League\Tactician\CommandBus;
 use phpDocumentor\Descriptor\DocumentationSetDescriptor;
-use phpDocumentor\Descriptor\GuideSetDescriptor;
 use phpDocumentor\Descriptor\ProjectDescriptor;
-use phpDocumentor\Descriptor\VersionDescriptor;
 use phpDocumentor\Dsn;
+use phpDocumentor\FileSystem\FileSystemFactory;
 use phpDocumentor\FlowService\Transformer;
 use phpDocumentor\Guides\RenderCommand;
 use phpDocumentor\Guides\Renderer;
 use phpDocumentor\Transformer\Template;
-use phpDocumentor\Transformer\Transformation;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Stopwatch\Stopwatch;
 use function sprintf;
@@ -44,11 +42,15 @@ final class RenderGuide implements Transformer, ProjectDescriptor\WithCustomSett
     /** @var Renderer */
     private $renderer;
 
-    public function __construct(Renderer $renderer, LoggerInterface $logger, CommandBus $commandBus)
+    /** @var FileSystemFactory */
+    private $fileSystems;
+
+    public function __construct(Renderer $renderer, LoggerInterface $logger, CommandBus $commandBus, FileSystemFactory $fileSystems)
     {
         $this->logger = $logger;
         $this->commandBus = $commandBus;
         $this->renderer = $renderer;
+        $this->fileSystems = $fileSystems;
     }
 
     public function execute(ProjectDescriptor $project, DocumentationSetDescriptor $documentationSet, Template $template): void
@@ -63,7 +65,7 @@ final class RenderGuide implements Transformer, ProjectDescriptor\WithCustomSett
         $this->renderer->initialize($project, $documentationSet, $template);
 
         $this->commandBus->handle(
-            new RenderCommand()
+            new RenderCommand($this->fileSystems->createDestination($documentationSet))
         );
 
         $this->completedRenderingSetMessage($stopwatch, $dsn);

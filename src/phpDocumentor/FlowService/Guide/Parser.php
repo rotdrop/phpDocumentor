@@ -62,14 +62,14 @@ final class Parser implements ParserInterface
         $this->log('Parsing guides', LogLevel::NOTICE);
 
         $source = $documentationSet->getSource();
-        $origin = $this->flySystemFactory->create($documentationSet->source()->dsn());
+        $origin = $this->flySystemFactory->create($documentationSet->getSource()->dsn());
         $directory = $source['paths'][0] ?? '';
         $inputFormat = $documentationSet->getInputFormat();
 
         $configuration = new Configuration($inputFormat, $this->outputFormats);
         $configuration->setOutputFolder($documentationSet->getOutput());
 
-        $this->commandBus->handle(new ParseDirectoryCommand($configuration, $origin, $directory));
+        $this->commandBus->handle(new ParseDirectoryCommand($configuration, $origin, (string) $directory));
     }
 
     /**
