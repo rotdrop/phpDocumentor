@@ -20,6 +20,7 @@ use League\Flysystem\AdapterInterface;
 use League\Flysystem\Filesystem;
 use League\Flysystem\MountManager;
 use LogicException;
+use phpDocumentor\Configuration\Source;
 use phpDocumentor\Descriptor\DocumentationSetDescriptor;
 use phpDocumentor\Descriptor\ProjectDescriptor;
 use phpDocumentor\Descriptor\VersionDescriptor;
@@ -36,13 +37,13 @@ class FlySystemFactory implements FileSystemFactory
     /** @var MountManager */
     private $mountManager;
 
-    /** @var string */
+    /** @var Dsn */
     private $outputRoot;
 
     /** @var array<string, string> */
     private $versionFolders;
 
-    /** @var array<string, array<string, string>  */
+    /** @var array<string, array<string, string>>  */
     private $documentationSets;
 
     public function __construct(MountManager $mountManager)
@@ -50,7 +51,7 @@ class FlySystemFactory implements FileSystemFactory
         $this->mountManager = $mountManager;
     }
 
-    public function setOutputRoot(string $output): void
+    public function setOutputDsn(Dsn $output): void
     {
         $this->outputRoot = $output;
     }
@@ -61,17 +62,28 @@ class FlySystemFactory implements FileSystemFactory
         $this->documentationSets[$versionNumber] = [];
     }
 
-    public function addDocumentationSet(string $versionNumber, array $source, string $output): void
+    public function addDocumentationSet(string $versionNumber, Source $source, string $output): void
     {
-//        $source['src']
-//
-//        $this->documentationSets[$versionNumber][] = [
-//
-//        ]
+        $setId = hash('md5', (string) $source->dsn());
+
+        $this->documentationSets[$versionNumber][$setId] = [
+            'source' => $source,
+            'output' => $output
+        ];
     }
 
-    public function createDestination(DocumentationSetDescriptor $documentationSetDescriptor)
+    public function createDestination(DocumentationSetDescriptor $documentationSetDescriptor): Filesystem
     {
+        $currentId = hash('md5', (string) $documentationSetDescriptor->getSource()->dsn());
+
+        foreach ($this->documentationSets as $versionNumber => $sets) {
+            foreach ($sets as $id => $set) {
+                if ($id === $currentId) {
+                    $path = $this->outputRoot->getPath()->append($this->versionFolders[$versionNumber] . DIRECTORY_SEPARATOR . $set['output']);
+                    return $this->create($this->outputRoot->withPath($path));
+                }
+            }
+        }
     }
 
     /**
