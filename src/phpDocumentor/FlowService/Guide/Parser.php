@@ -13,11 +13,12 @@ declare(strict_types=1);
 
 namespace phpDocumentor\FlowService\Guide;
 
+use InvalidArgumentException;
 use League\Tactician\CommandBus;
 use phpDocumentor\Descriptor\DocumentationSetDescriptor;
 use phpDocumentor\Descriptor\GuideSetDescriptor;
-use phpDocumentor\FlowService\Parser as ParserInterface;
 use phpDocumentor\FileSystem\FlySystemFactory;
+use phpDocumentor\FlowService\Parser as ParserInterface;
 use phpDocumentor\Guides\Configuration;
 use phpDocumentor\Guides\Formats\Format;
 use phpDocumentor\Guides\RestructuredText\ParseDirectoryCommand;
@@ -53,10 +54,10 @@ final class Parser implements ParserInterface
         $this->flySystemFactory = $flySystemFactory;
     }
 
-    public function operate(DocumentationSetDescriptor $documentationSet): void
+    public function operate(DocumentationSetDescriptor $documentationSet) : void
     {
         if (!$documentationSet instanceof GuideSetDescriptor) {
-            throw new \InvalidArgumentException('Invalid documentation set');
+            throw new InvalidArgumentException('Invalid documentation set');
         }
 
         $this->log('Parsing guides', LogLevel::NOTICE);

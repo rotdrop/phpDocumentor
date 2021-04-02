@@ -10,11 +10,23 @@ use League\Flysystem\Filesystem;
 use League\Flysystem\MountManager;
 use Mockery as m;
 use phpDocumentor\Configuration\ApiSpecification;
+use phpDocumentor\Configuration\Source;
 use phpDocumentor\Configuration\SymfonyConfigFactory;
 use phpDocumentor\Configuration\VersionSpecification;
-use phpDocumentor\FileSystem\FlySystemFactory;
+use phpDocumentor\Descriptor\ApiSetDescriptor;
+use phpDocumentor\Descriptor\ClassDescriptor;
+use phpDocumentor\Descriptor\ConstantDescriptor;
+use phpDocumentor\Descriptor\FileDescriptor;
+use phpDocumentor\Descriptor\FunctionDescriptor;
+use phpDocumentor\Descriptor\InterfaceDescriptor;
+use phpDocumentor\Descriptor\MethodDescriptor;
+use phpDocumentor\Descriptor\NamespaceDescriptor;
+use phpDocumentor\Descriptor\PropertyDescriptor;
+use phpDocumentor\Descriptor\TraitDescriptor;
 use phpDocumentor\Dsn;
+use phpDocumentor\FileSystem\FlySystemFactory;
 use phpDocumentor\Path;
+use phpDocumentor\Reflection\Fqsen;
 use phpDocumentor\Reflection\Php\Factory\ContextStack;
 use phpDocumentor\Reflection\Php\Project;
 use phpDocumentor\Transformer\Template;
@@ -23,6 +35,9 @@ use phpDocumentor\Transformer\Transformer;
 use phpDocumentor\Transformer\Writer\Collection;
 use Psr\Log\NullLogger;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
+use function array_pop;
+use function implode;
+use const DIRECTORY_SEPARATOR;
 
 final class Provider extends Base
 {
@@ -89,6 +104,14 @@ final class Provider extends Base
         );
     }
 
+    public function source() : Source
+    {
+        return new Source(
+            $this->dsn(),
+            [$this->path()]
+        );
+    }
+
     public function apiSpecification() : ApiSpecification
     {
         return ApiSpecification::createDefault();
@@ -101,22 +124,140 @@ final class Provider extends Base
 
     public function path() : Path
     {
-        return new Path('./');
+        return new Path(implode(DIRECTORY_SEPARATOR, $this->generator->words(5)));
     }
 
     public function versionSpecification() : VersionSpecification
     {
         return new VersionSpecification(
             $this->generator->numerify('v##.##'),
-            [
-                ApiSpecification::createFromArray(
-                    [
-                        'source' => [],
-                        'output' => 'a'
-                    ]
-                )
+            (string) $this->path(),
+            [ApiSpecification::createFromArray(
+                [
+                    'source' => [],
+                    'output' => 'a',
+                ]
+            ),
             ],
             []
         );
+    }
+
+    /** @param FileDescriptor[] $files */
+    public function apiSetDescriptor(array $files = []) : ApiSetDescriptor
+    {
+        $set = new ApiSetDescriptor(
+            $this->generator->word(),
+            $this->source(),
+            (string) $this->path(),
+            $this->apiSpecification()
+        );
+
+        foreach ($files as $file) {
+            $set->addFile($file);
+        }
+
+        return $set;
+    }
+
+    public function apiSetDescriptorWithFiles(int $numberOfFiles = 2) : ApiSetDescriptor
+    {
+        $files = [];
+        for ($i = 0; $i < $numberOfFiles; $i++) {
+            $files[] = $this->fileDescriptor();
+        }
+
+        return $this->apiSetDescriptor($files);
+    }
+
+    public function fileDescriptor() : FileDescriptor
+    {
+        $file = new FileDescriptor($this->generator->md5);
+        $file->setPath((string) $this->path());
+
+        return $file;
+    }
+
+    public function namespaceDescriptor(?string $className = null) : NamespaceDescriptor
+    {
+        $parts = $this->generator->words();
+        $className = $className ?? '\\' . implode('\\', $parts);
+
+        $classDescriptor = new NamespaceDescriptor();
+        $classDescriptor->setName($className);
+        $classDescriptor->setFullyQualifiedStructuralElementName(new Fqsen($className));
+
+        return $classDescriptor;
+    }
+
+    public function classDescriptor(?string $className = null, string $namespace = '\\') : ClassDescriptor
+    {
+        $parts = $this->generator->words();
+        $className = $className ?? '\\' . implode('\\', $parts);
+        array_pop($parts);
+        $namespace = $namespace ?? '\\' . implode('\\', $parts);
+
+        $classDescriptor = new ClassDescriptor();
+        $classDescriptor->setNamespace($namespace);
+        $classDescriptor->setFullyQualifiedStructuralElementName(new Fqsen($className));
+
+        return $classDescriptor;
+    }
+
+    public function interfaceDescriptor(?string $className = null, string $namespace = '\\') : InterfaceDescriptor
+    {
+        $parts = $this->generator->words();
+        $className = $className ?? '\\' . implode('\\', $parts);
+        array_pop($parts);
+        $namespace = $namespace ?? '\\' . implode('\\', $parts);
+
+        $interfaceDescriptor = new InterfaceDescriptor();
+        $interfaceDescriptor->setNamespace($namespace);
+        $interfaceDescriptor->setFullyQualifiedStructuralElementName(new Fqsen($className));
+
+        return $interfaceDescriptor;
+    }
+
+    public function traitDescriptor(string $className, string $namespace = '\\') : TraitDescriptor
+    {
+        $traitDescriptor = new TraitDescriptor();
+        $traitDescriptor->setNamespace($namespace);
+        $traitDescriptor->setFullyQualifiedStructuralElementName(new Fqsen($className));
+
+        return $traitDescriptor;
+    }
+
+    public function functionDescriptor(string $className, string $namespace = '\\') : FunctionDescriptor
+    {
+        $functionDescriptor = new FunctionDescriptor();
+        $functionDescriptor->setNamespace($namespace);
+        $functionDescriptor->setFullyQualifiedStructuralElementName(new Fqsen($className));
+
+        return $functionDescriptor;
+    }
+
+    public function constantDescriptor(string $className, string $namespace = '\\') : ConstantDescriptor
+    {
+        $constantDescriptor = new ConstantDescriptor();
+        $constantDescriptor->setNamespace($namespace);
+        $constantDescriptor->setFullyQualifiedStructuralElementName(new Fqsen($className));
+
+        return $constantDescriptor;
+    }
+
+    public function propertyDescriptor(string $className) : PropertyDescriptor
+    {
+        $propertyDescriptor = new PropertyDescriptor();
+        $propertyDescriptor->setFullyQualifiedStructuralElementName(new Fqsen($className));
+
+        return $propertyDescriptor;
+    }
+
+    public function methodDescriptor(string $className) : MethodDescriptor
+    {
+        $methodDescriptor = new MethodDescriptor();
+        $methodDescriptor->setFullyQualifiedStructuralElementName(new Fqsen($className));
+
+        return $methodDescriptor;
     }
 }

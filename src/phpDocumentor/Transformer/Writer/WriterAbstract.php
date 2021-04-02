@@ -39,7 +39,6 @@ abstract class WriterAbstract
     /**
      * Abstract definition of the transformation method.
      *
-     * @param DocumentationSetDescriptor $documentationSet
      * @param Transformation $transformation Transformation to execute.
      */
     abstract public function transform(

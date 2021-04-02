@@ -17,7 +17,6 @@ use phpDocumentor\Descriptor\DocumentationSetDescriptor;
 use phpDocumentor\Descriptor\ProjectDescriptor;
 use phpDocumentor\Guides\Twig\AssetsExtension;
 use phpDocumentor\Transformer\Template;
-use phpDocumentor\Transformer\Transformation;
 use phpDocumentor\Transformer\Writer\Graph\PlantumlRenderer;
 use phpDocumentor\Transformer\Writer\Twig\EnvironmentFactory;
 use Psr\Log\LoggerInterface;
