@@ -81,41 +81,6 @@ class ProjectDescriptor implements Interfaces\ProjectInterface, Descriptor
     }
 
     /**
-     * Returns all files with their sub-elements.
-     *
-     * @return Collection<FileDescriptor>
-     */
-    public function getFiles() : Collection
-    {
-        return $this->getApiDocSet()->getFiles();
-    }
-
-    /**
-     * Returns all indexes in this project.
-     *
-     * @see setIndexes() for more information on what indexes are.
-     *
-     * @return Collection<Collection<DescriptorAbstract>>
-     */
-    public function getIndexes() : Collection
-    {
-        return $this->getApiDocSet()->getIndexes();
-    }
-
-    /**
-     * Returns the root (global) namespace.
-     */
-    public function getNamespace() : NamespaceDescriptor
-    {
-        return $this->getApiDocSet()->getNamespace();
-    }
-
-    public function getPackage() : PackageInterface
-    {
-        return $this->getApiDocSet()->getPackage();
-    }
-
-    /**
      * Sets the settings used to build the documentation for this project.
      */
     public function setSettings(Settings $settings) : void
@@ -156,25 +121,11 @@ class ProjectDescriptor implements Interfaces\ProjectInterface, Descriptor
         return $this->partials;
     }
 
-    public function findElement(Fqsen $fqsen) : ?Descriptor
-    {
-        if (!isset($this->getIndexes()['elements'])) {
-            return null;
-        }
-
-        return $this->getIndexes()['elements']->fetch((string) $fqsen);
-    }
-
     /**
      * @return Collection<VersionDescriptor>
      */
     public function getVersions() : Collection
     {
         return $this->versions;
-    }
-
-    private function getApiDocSet()
-    {
-        return current($this->getVersions()->get(0)->getDocumentationSets()->filter(ApiSetDescriptor::class)->getAll());
     }
 }

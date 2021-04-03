@@ -24,9 +24,4 @@ interface ProjectInterface
     public function setName(string $name) : void;
 
     public function getName() : string;
-
-    /**
-     * @return Collection<FileDescriptor>
-     */
-    public function getFiles() : Collection;
 }
