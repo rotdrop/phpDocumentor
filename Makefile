@@ -1,5 +1,7 @@
 ARGS ?=
 
+PHP = $(which php)
+
 .USER = CURRENT_UID=$(shell id -u):$(shell id -g)
 .DOCKER_COMPOSE_RUN = ${.USER} docker compose run --rm
 .PHP = docker run --user=$(shell id -u):$(shell id -g) -it --rm -v${CURDIR}:/data -w /data php:8.1
@@ -54,7 +56,7 @@ help:
 .PHONY: phar
 phar: composer-mirror
 	composer remove --dev phpstan/extension-installer; \
-	php -d phar.readonly=false tools/box compile --config=box.json
+	$(PHP) -d phar.readonly=false tools/box compile --config=box.json
 
 tools/phive.phar:
 	wget -O tools/phive.phar https://phar.io/releases/phive.phar; \
