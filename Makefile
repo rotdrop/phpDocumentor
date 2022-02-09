@@ -1,5 +1,7 @@
 ARGS ?=
 
+PHP = $(which php)
+
 .USER = CURRENT_UID=$(shell id -u):$(shell id -g)
 .DOCKER_COMPOSE_RUN = ${.USER} docker-compose run --rm
 
@@ -50,8 +52,8 @@ help:
 
 .PHONY: phar
 phar: composer-mirror
-	php ./bin/console --env=prod cache:warmup; \
-	php -d phar.readonly=false tools/box.phar compile --config=box.json
+	$(PHP) ./bin/console --env=prod cache:warmup; \
+	$(PHP) -d phar.readonly=false tools/box.phar compile --config=box.json
 
 tools/phive.phar:
 	wget -O tools/phive.phar https://phar.io/releases/phive.phar; \
