@@ -1,6 +1,6 @@
 ARGS ?=
 
-PHP = $(which php)
+PHP = $(shell which php 2> /dev/null)
 
 .USER = CURRENT_UID=$(shell id -u):$(shell id -g)
 .DOCKER_COMPOSE_RUN = ${.USER} docker-compose run --rm
