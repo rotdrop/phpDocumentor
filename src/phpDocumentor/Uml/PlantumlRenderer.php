@@ -62,7 +62,8 @@ MSG,);
         file_put_contents($pumlFileLocation, $output);
         try {
             $process = Process::fromShellCommandline(
-                $this->plantUmlBinaryPath . ' -Playout=smetana  -tsvg ' . $pumlFileLocation,
+                // $this->plantUmlBinaryPath . ' -Playout=smetana  -tsvg ' . $pumlFileLocation,
+                $this->plantUmlBinaryPath . ' -tsvg ' . $pumlFileLocation,
                 __DIR__,
                 null,
                 null,
